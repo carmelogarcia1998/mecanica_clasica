@@ -16,7 +16,7 @@ B = 0   # Distancia la base del pendulo al origen
 # Definir las ecuaciones del movimiento
 def equations(z, t):
     theta, dthetadt = z
-    d2thetadt2 = ((Q0 / (m * l)) * np.cos(Omega * t) * np.cos(theta) + (g / l) * np.sin(theta) - (B / (m * l**2)) * dthetadt - ((k * h**2) / (m * l**2)) * np.sin(theta) * np.cos(theta))
+    d2thetadt2 =  (Q0/m*l**2)*np.cos(Omega*t) + (g/l - ((k*h**2)/(m*l**2))*np.cos(theta))*np.sin(theta) - ((B*k*h)/(m*l**2))*np.cos(theta)
     return [dthetadt, d2thetadt2]
 
 # Condiciones iniciales
@@ -46,7 +46,7 @@ spring_y = h * np.sin(theta_sol)
 fig, ax = plt.subplots()
 ax.set_xlim(-l - 0.5, l + 0.5)
 ax.set_ylim(-l - 0.5, l + 0.5)
-ax.axvline(-0.5, color='gray', linestyle='--')
+ax.axvline(-B, color='gray', linestyle='--')
 line_pendulum, = ax.plot([], [], 'o-', lw=2, color='blue')
 line_spring, = ax.plot([], [], color='red', linestyle='-', lw=1)
 
