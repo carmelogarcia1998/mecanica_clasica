@@ -4,48 +4,51 @@ from scipy.integrate import odeint
 from matplotlib.animation import FuncAnimation
 
 # Parámetros del sistema
-m = 1.0   # Masa del péndulo
-l0 = 1.0  # Longitud natural del resorte
-k = 40 # Constante del resorte
+m = 1   # Masa del péndulo
+l = 1.0  # Longitud del péndulo
+k = 1000  # Constante del resorte
+h = 0.5*l  # Longitud natural del resorte cuando no está comprimido o extendido
+Q0 = 1.0  # Amplitud de la fuerza externa
+Omega = 1.0  # Frecuencia de la fuerza externa
 g = 9.81  # Aceleración debida a la gravedad
+B = 0.5   # Distancia la base del pendulo al origen
 
 # Definir las ecuaciones del movimiento
-def equations(y, t, m, l0, k, g):
-    l, ld, theta, thetad = y
-    ldd = (m * l * thetad**2 - k * (l - l0) + m * g * np.cos(theta)) / m
-    thetadd = (-2 * ld * thetad - g * np.sin(theta)) / l
-    return [ld, ldd, thetad, thetadd]
+def equations(z, t):
+    theta, dthetadt = z
+    d2thetadt2 = ((Q0 / (m * l)) * np.cos(Omega * t) * np.cos(theta) + (g / l) * np.sin(theta) - (B / (m * l**2)) * dthetadt - ((k * h**2) / (m * l**2)) * np.sin(theta) * np.cos(theta))
+    return [dthetadt, d2thetadt2]
 
 # Condiciones iniciales
-l0 = 1.0
-l_init = l0 + 0.2  # Longitud inicial del resorte ligeramente extendida
-ld_init = 0.0  # Velocidad inicial del resorte
-theta_init = np.pi / 4  # Ángulo inicial del péndulo
-thetad_init = 0.0  # Velocidad angular inicial
-y0 = [l_init, ld_init, theta_init, thetad_init]
+theta0 = np.pi / 3  # ángulo inicial (en radianes)
+dthetadt0 = 0.0     # velocidad angular inicial
+z0 = [theta0, dthetadt0]
 
 # Intervalo de tiempo
-t = np.linspace(0, 20, 1000)
+t = np.linspace(0, 10, 1000)
 
 # Resolver el sistema de ecuaciones diferenciales
-sol = odeint(equations, y0, t, args=(m, l0, k, g))
+sol = odeint(equations, z0, t)
 
 # Extraer las soluciones
-l_sol = sol[:, 0]
-ld_sol = sol[:, 1]
-theta_sol = sol[:, 2]
-thetad_sol = sol[:, 3]
+theta_sol = sol[:, 0]
+dthetadt_sol = sol[:, 1]
 
 # Convertir las posiciones angulares a coordenadas x, y del péndulo
-pendulum_x = l_sol * np.sin(theta_sol)
-pendulum_y = -l_sol * np.cos(theta_sol)
+pendulum_x = l * np.cos(theta_sol)
+pendulum_y = l * np.sin(theta_sol)
+
+# Coordenadas del resorte
+spring_x = h * np.cos(theta_sol) 
+spring_y = h * np.sin(theta_sol)
 
 # Crear la figura y el eje para la animación
 fig, ax = plt.subplots()
-ax.set_xlim(-2, 2)
-ax.set_ylim(-2, 2)
+ax.set_xlim(-l - 0.5, l + 0.5)
+ax.set_ylim(-l - 0.5, l + 0.5)
+ax.axvline(-0.5, color='gray', linestyle='--')
 line_pendulum, = ax.plot([], [], 'o-', lw=2, color='blue')
-line_spring, = ax.plot([], [], color='red', linestyle='-', lw=2)
+line_spring, = ax.plot([], [], color='red', linestyle='-', lw=1)
 
 # Función de inicialización
 def init():
@@ -59,7 +62,7 @@ def update(frame):
     line_pendulum.set_data([0, pendulum_x[frame]], [0, pendulum_y[frame]])
     
     # Actualizar datos del resorte
-    line_spring.set_data([0, pendulum_x[frame]], [0, pendulum_y[frame]])
+    line_spring.set_data([-B, spring_x[frame]], [h, spring_y[frame]])
     
     return line_pendulum, line_spring
 
@@ -80,9 +83,9 @@ plt.title('Solución de la ecuación de movimiento')
 plt.legend()
 
 plt.subplot(2, 1, 2)
-plt.plot(t, ld_sol, label='Velocidad del resorte (ld)', color='r')
+plt.plot(t, dthetadt_sol, label='Velocidad angular (dtheta/dt)', color='r')
 plt.xlabel('Tiempo (s)')
-plt.ylabel('Velocidad (m/s)')
+plt.ylabel('Velocidad angular (rad/s)')
 plt.legend()
 
 plt.tight_layout()
