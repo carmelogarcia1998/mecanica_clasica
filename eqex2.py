@@ -6,7 +6,7 @@ from matplotlib.animation import FuncAnimation
 # Parámetros del sistema
 m = 1   # Masa del péndulo
 l = 1.0  # Longitud del péndulo
-k = 10000  # Constante del resorte
+k = 1  # Constante del resorte
 h = 0.7*l  # Longitud natural del resorte cuando no está comprimido o extendido
 Q0 = 1.0  # Amplitud de la fuerza externa
 Omega = 1.0  # Frecuencia de la fuerza externa
