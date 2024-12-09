@@ -5,17 +5,17 @@ from scipy.integrate import odeint
 # Parámetros del sistema
 m = 1   # Masa del péndulo
 l = 1.0  # Longitud del péndulo
-k = 1000  # Constante del resorte
-h = l / 2  # Longitud natural del resorte cuando no está comprimido o extendido
+k = 10000  # Constante del resorte
+h = 0.7*l  # Longitud natural del resorte cuando no está comprimido o extendido
 Q0 = 1.0  # Amplitud de la fuerza externa
 Omega = 1.0  # Frecuencia de la fuerza externa
 g = 9.81  # Aceleración debida a la gravedad
-B = 0.5   # Amortiguación
+B = 0   # Distancia la base del pendulo al origen
 
 # Definir las ecuaciones del movimiento
 def equations(z, t):
     theta, dthetadt = z
-    d2thetadt2 = ((Q0 / (m * l)) * np.cos(Omega * t) * np.cos(theta) + (g / l) * np.sin(theta) - (B / (m * l**2)) * dthetadt - ((k * h**2) / (m * l**2)) * np.sin(theta) * np.cos(theta))
+    d2thetadt2 =  (Q0/m*l**2)*np.cos(Omega*t) + (g/l - ((k*h**2)/(m*l**2))*np.cos(theta))*np.sin(theta) - ((B*k*h)/(m*l**2))*np.cos(theta)
     return [dthetadt, d2thetadt2]
 
 # Parámetros para el cálculo del exponente de Lyapunov
